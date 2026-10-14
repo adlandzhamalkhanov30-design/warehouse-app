@@ -22,7 +22,7 @@ android.api = 31
 
 android.minapi = 21
 
-android.ndk = 25b
+android.ndk = 25.2.9519653
 
 source.filenames = main.py
 
