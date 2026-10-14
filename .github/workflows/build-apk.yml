@@ -28,14 +28,22 @@ jobs:
           pip uninstall -y sh
           pip install "sh<2.0"
 
-      - name: Accept Android licenses
+      - name: Setup Android SDK & Accept Licenses
         run: |
           mkdir -p ~/android-sdk
-          wget -q https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip -O cmdline-tools.zip
+          # Скачиваем command line tools (версия 11076708 — стабильная для buildozer)
+          wget -q https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -O cmdline-tools.zip
           unzip -q cmdline-tools.zip -d ~/android-sdk
-          mv ~/android-sdk/cmdline-tools ~/android-sdk/latest
+          mv ~/android-sdk/cmdline-tools ~/android-sdk/tools
+          mv ~/android-sdk/tools ~/android-sdk/cmdline-tools
+          
           export ANDROID_HOME=~/android-sdk
-          export PATH=$ANDROID_HOME/latest/bin:$PATH
+          export PATH=$ANDROID_HOME/cmdline-tools/bin:$PATH
+          export PATH=$ANDROID_HOME/platform-tools:$PATH
+          export PATH=$ANDROID_HOME/tools:$PATH
+          
+          # Устанавливаем компоненты и принимаем лицензии
+          sdkmanager --install "platforms;android-31" "build-tools;30.0.3" "ndk;25.2.9519653"
           yes | sdkmanager --licenses || true
 
       - name: Build APK
