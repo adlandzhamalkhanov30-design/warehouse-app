@@ -29,22 +29,25 @@ jobs:
           pip install "sh<2.0"
 
       - name: Setup Android SDK & Accept Licenses
+        env:
+          ANDROID_HOME: ~/android-sdk
+          ANDROID_SDK_ROOT: ~/android-sdk
         run: |
-          mkdir -p ~/android-sdk
-          # Скачиваем command line tools (версия 11076708 — стабильная для buildozer)
+          mkdir -p "\$ANDROID_HOME"
           wget -q https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -O cmdline-tools.zip
-          unzip -q cmdline-tools.zip -d ~/android-sdk
-          mv ~/android-sdk/cmdline-tools ~/android-sdk/tools
-          mv ~/android-sdk/tools ~/android-sdk/cmdline-tools
+          unzip -q cmdline-tools.zip -d "\$ANDROID_HOME"
           
-          export ANDROID_HOME=~/android-sdk
-          export PATH=$ANDROID_HOME/cmdline-tools/bin:$PATH
-          export PATH=$ANDROID_HOME/platform-tools:$PATH
-          export PATH=$ANDROID_HOME/tools:$PATH
+          # Создаем требуемую структуру cmdline-tools/latest
+          mkdir -p "\$ANDROID_HOME/cmdline-tools/latest"
+          mv "$ANDROID_HOME/cmdline-tools"/* "$ANDROID_HOME/cmdline-tools/latest/"
+          rmdir "\$ANDROID_HOME/cmdline-tools"
           
-          # Устанавливаем компоненты и принимаем лицензии
-          sdkmanager --install "platforms;android-31" "build-tools;30.0.3" "ndk;25.2.9519653"
-          yes | sdkmanager --licenses || true
+          # Добавляем пути в PATH для текущей сессии
+          export PATH="$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:\$PATH"
+          
+          # Установка компонентов и лицензий с явным указанием sdk_root
+          sdkmanager --sdk_root="\$ANDROID_SDK_ROOT" --install "platforms;android-31" "build-tools;30.0.3" "ndk;25.2.9519653"
+          yes | sdkmanager --sdk_root="\$ANDROID_SDK_ROOT" --licenses || true
 
       - name: Build APK
         env:
