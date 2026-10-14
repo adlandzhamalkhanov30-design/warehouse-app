@@ -16,20 +16,31 @@ jobs:
         with:
           python-version: '3.11'
 
-       - name: Install dependencies
-         run: |
-           sudo apt-get update
-           sudo apt-get install -y python3-pip python3-venv git zip unzip openjdk-17-jdk autoconf automake cmake build-essential libssl-dev libffi-dev zlib1g-dev
-           pip install --upgrade pip
-           pip install buildozer
-
-
-      - name: Fix sh version (critical for buildozer)
+      - name: Install system dependencies
         run: |
+          sudo apt-get update
+          sudo apt-get install -y python3-pip git zip unzip openjdk-17-jdk autoconf automake cmake build-essential libssl-dev libffi-dev zlib1g-dev
+
+      - name: Install Buildozer and fix 'sh'
+        run: |
+          pip install --upgrade pip
+          pip install buildozer
           pip uninstall -y sh
           pip install "sh<2.0"
 
+      - name: Accept Android licenses
+        run: |
+          mkdir -p ~/android-sdk
+          wget -q https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip -O cmdline-tools.zip
+          unzip -q cmdline-tools.zip -d ~/android-sdk
+          mv ~/android-sdk/cmdline-tools ~/android-sdk/latest
+          export ANDROID_HOME=~/android-sdk
+          export PATH=$ANDROID_HOME/latest/bin:$PATH
+          yes | sdkmanager --licenses || true
+
       - name: Build APK
+        env:
+          ANDROID_HOME: ~/android-sdk
         run: buildozer -v android debug
 
       - name: Upload APK
