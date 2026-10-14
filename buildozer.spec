@@ -32,7 +32,4 @@ bin_dir = bin
 
 log_level = 2
 
-p4a.source_dir = /content/python-for-android
-p4a.branch = master
-
 clean = True
