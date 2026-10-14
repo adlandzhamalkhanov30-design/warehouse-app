@@ -1,0 +1,39 @@
+name: Build Kivy APK
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+       - name: Install dependencies
+         run: |
+           sudo apt-get update
+           sudo apt-get install -y python3-pip python3-venv git zip unzip openjdk-17-jdk autoconf automake cmake build-essential libssl-dev libffi-dev zlib1g-dev
+           pip install --upgrade pip
+           pip install buildozer
+
+
+      - name: Fix sh version (critical for buildozer)
+        run: |
+          pip uninstall -y sh
+          pip install "sh<2.0"
+
+      - name: Build APK
+        run: buildozer -v android debug
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: apk-file
+          path: bin/*.apk
